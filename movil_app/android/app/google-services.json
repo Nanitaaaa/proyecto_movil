@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "660489049247",
+    "project_id": "movil-app-cb95b",
+    "storage_bucket": "movil-app-cb95b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660489049247:android:b701cfec6b5eda8a0a3eaa",
+        "android_client_info": {
+          "package_name": "com.example.movil_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "660489049247-ia4k3fm071tmd69v4804nuugmg45fhbj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.movil_app",
+            "certificate_hash": "ae3aa7328b85e5418859123345e46154ed29ae6f"
+          }
+        },
+        {
+          "client_id": "660489049247-t3aold80s6bjhfmmulpni9ol42qpoub3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFrHVtfgek5VlaQeYtP7NUGfjigYMYLYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "660489049247-t3aold80s6bjhfmmulpni9ol42qpoub3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
