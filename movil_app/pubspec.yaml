@@ -38,6 +38,7 @@ dependencies:
   google_sign_in: ^6.2.1
   logger: ^2.4.0
   shared_preferences: ^2.3.2
+  dio: ^5.7.0
 
 dev_dependencies:
   flutter_test:

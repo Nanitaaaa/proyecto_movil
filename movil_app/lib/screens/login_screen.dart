@@ -58,11 +58,13 @@ class LoginScreen extends StatelessWidget {
                   GoogleService.logIn().then((result) {
                     if (result) {
                       _logger.i('Login success');
+                      // ignore: use_build_context_synchronously
                       Navigator.push(context, MaterialPageRoute(builder: (context) {
                         return const HomeScreen();
                       }));
                     } else {
                       _logger.e('Login failed');
+                      // ignore: use_build_context_synchronously
                       Navigator.push(context, MaterialPageRoute(builder: (context) {
                         return const ErrorScreen();
                       }));
@@ -84,15 +86,6 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  // Acción para olvidar la contraseña o crear una cuenta
-                },
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(color: Colors.blueAccent),
-                ),
-              ),
             ],
           ),
         ),
