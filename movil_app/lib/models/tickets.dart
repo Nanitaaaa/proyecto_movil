@@ -34,16 +34,18 @@ class Ticket {
     });
 
     factory Ticket.fromJson(Map<String, dynamic> json) => Ticket(
-        type: json["type"],
-        subject: json["subject"],
-        message: json["message"],
-        category: Category.fromJson(json["category"]),
-        token: json["token"],
-        status: json["status"],
-        response: json["response"],
-        attachedTokens: List<String>.from(json["attachedTokens"].map((x) => x)),
-        created: DateTime.parse(json["created"]),
-        updated: DateTime.parse(json["updated"]),
+        type: json["type"] ?? '', // Valor predeterminado en caso de `null`
+        subject: json["subject"] ?? '',
+        message: json["message"] ?? '',
+        category: Category.fromJson(json["category"] ?? {}),
+        token: json["token"] ?? '',
+        status: json["status"] ?? '',
+        response: json["response"] ?? '',
+        attachedTokens: json["attachedTokens"] != null
+            ? List<String>.from(json["attachedTokens"].map((x) => x))
+            : [],
+        created: json["created"] != null ? DateTime.parse(json["created"]) : DateTime.now(),
+        updated: json["updated"] != null ? DateTime.parse(json["updated"]) : DateTime.now(),
     );
 
     Map<String, dynamic> toJson() => {
@@ -72,9 +74,9 @@ class Category {
     });
 
     factory Category.fromJson(Map<String, dynamic> json) => Category(
-        token: json["token"],
-        name: json["name"],
-        description: json["description"],
+        token: json["token"] ?? '', // Valor predeterminado en caso de `null`
+        name: json["name"] ?? '',
+        description: json["description"] ?? '',
     );
 
     Map<String, dynamic> toJson() => {

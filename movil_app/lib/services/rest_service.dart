@@ -174,7 +174,7 @@ class RestServiceTickets {
   static const String _mime = 'application/json';
   static const String _baseUrl = 'https://api.sebastian.cl/oirs-utem';
 
-  static Future<List<Ticket>> getAllTickets() async {
+  static Future<List<Ticket>> getAllTickets(String status) async {
     List<Ticket> allTickets = [];
 
     SharedPreferences instance = await SharedPreferences.getInstance();
@@ -185,21 +185,19 @@ class RestServiceTickets {
       return allTickets;
     }
 
+    // Retrieve all categories and types
     List<Categories> categories = await RestServiceCategories.access();
     List<String> types = await RestServiceTypes.access();
-    List<String> statuses = await RestServiceStatus.access();
 
     for (var category in categories) {
       for (var type in types) {
-        for (var status in statuses) {
-          _logger.i("Bucando categoria por nombre: ${category.name}, Type: $type, Status: $status");
+        _logger.i("Buscando tickets con Category Token: ${category.token}, Type: $type, Status: $status");
 
-          List<Ticket> tickets = await getTickets(category.token, type, status);
-          allTickets.addAll(tickets);
+        List<Ticket> tickets = await getTickets(category.token, type, status);
+        allTickets.addAll(tickets);
 
-          for (var ticket in tickets) {
-            _logger.i("Ticket Subject: ${ticket.subject}, Status: ${ticket.status}, Type: ${ticket.type}, Category: ${category.name}");
-          }
+        for (var ticket in tickets) {
+          _logger.i("Ticket Subject: ${ticket.subject}, Status: ${ticket.status}, Type: ${ticket.type}, Category Token: ${category.token}");
         }
       }
     }
@@ -209,7 +207,7 @@ class RestServiceTickets {
 
   static Future<List<Ticket>> getTickets(String categoryToken, String type, String status) async {
     List<Ticket> list = [];
-    
+
     _client.interceptors.add(LogInterceptor(
       request: true,
       requestBody: true,
@@ -245,7 +243,54 @@ class RestServiceTickets {
         _logger.e("ERROR AL ENCONTRAR EL TICKET: $e");
       }
     }
-    
+
     return list;
+  }
+}
+class TicketStateManager {
+  static final Dio _client = Dio();
+  static final Logger _logger = Logger();
+
+  static const String _mime = 'application/json';
+  static const String _baseUrl = 'https://api.sebastian.cl/oirs-utem';
+
+  /// Actualiza el estado de un ticket.
+  static Future<bool> updateTicketStatus({
+    required String ticketToken,
+    required String newStatus,
+    required String responseMessage,
+  }) async {
+    SharedPreferences instance = await SharedPreferences.getInstance();
+    String idToken = instance.getString('idToken') ?? '';
+
+    if (idToken.isEmpty) {
+      _logger.e("No valid ID token found.");
+      return false;
+    }
+
+    final String url = '$_baseUrl/v1/response/$ticketToken/ticket';
+    Map<String, String> headers = {'accept': _mime, 'Authorization': idToken};
+
+    try {
+      Response response = await _client.put(
+        url,
+        options: Options(headers: headers),
+        data: {
+          "status": newStatus,
+          "response": responseMessage,
+        },
+      );
+
+      if (response.statusCode == 202) {
+        _logger.i("Ticket actualizado correctamente: $ticketToken a estado $newStatus");
+        return true;
+      } else {
+        _logger.e("Error al actualizar el ticket: ${response.statusCode}");
+      }
+    } catch (e) {
+      _logger.e("ERROR: $e");
+    }
+
+    return false;
   }
 }

@@ -60,7 +60,7 @@ class LoginScreen extends StatelessWidget {
                       _logger.i('Login success');
                       // ignore: use_build_context_synchronously
                       Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const HomeScreen();
+                        return HomeScreen();
                       }));
                     } else {
                       _logger.e('Login failed');

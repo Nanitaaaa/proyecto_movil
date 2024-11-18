@@ -1,79 +1,51 @@
-
 import 'package:flutter/material.dart';
-import 'package:movil_app/models/access.dart';
-import 'package:movil_app/models/categories.dart';
-import 'package:movil_app/models/tickets.dart'; // Asegúrate de importar el modelo Ticket;
-import 'package:movil_app/services/rest_service.dart';
-import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:movil_app/shared/drawer.dart';
 
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  String? userName;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
 
-class HomeScreen extends StatelessWidget {
-  static final Logger _logger = Logger();
-
-  const HomeScreen({super.key});
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('name') ?? 'Usuario desconocido';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return CustomScaffold(
+      title: 'Inicio',
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FloatingActionButton(
-              onPressed: () {
-                Future<List<Access>> future = RestServiceAccess.access();
-                future.whenComplete(() {
-                  _logger.i('Termine');
-                });
-              },
-              child: const Text('Access'),
-            ),
-            const SizedBox(height: 20), // Espacio entre los botones
-            FloatingActionButton(
-              onPressed: () {
-                Future<void> future = RestServiceTypes.access();
-                future.whenComplete(() {
-                  _logger.i('Termine');
-                });
-              },
-              child: const Text('Types'),
-            ),
-            const SizedBox(height: 20), // Espacio entre los botones
-            FloatingActionButton(
-              onPressed: () {
-                Future<List<Categories>> future = RestServiceCategories.access();
-                future.whenComplete(() {
-                  _logger.i('Termine');
-                });
-              },
-              child: const Text('Categories'),
-            ),
-            const SizedBox(height: 20), // Espacio entre los botones
-            FloatingActionButton(
-              onPressed: () {
-                Future<void> future = RestServiceStatus.access();
-                future.whenComplete(() {
-                  _logger.i('Termine');
-                });
-              },
-              child: const Text('Status'),
-            ),
-            const SizedBox(height: 20), // Espacio entre los botones
-            FloatingActionButton(
-              onPressed: ()  {
-                Future<List<Ticket>> future = RestServiceTickets.getAllTickets();
-                future.whenComplete(() {
-                  _logger.i('Termine');
-                });
-                
-              },
-              child: const Text('Tickets'),
-            ),
-          ],
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '¡Bienvenido, $userName!', // Aquí se muestra el nconst ombre cargado
+                style: const TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
