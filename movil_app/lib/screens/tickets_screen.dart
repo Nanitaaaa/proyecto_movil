@@ -16,6 +16,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
   static final Logger _logger = Logger();
   List<Ticket>? tickets;
   String? selectedType;
+  bool _isLoading = false; // Estado para controlar la carga
 
   @override
   void initState() {
@@ -24,13 +25,20 @@ class _TicketsScreenState extends State<TicketsScreen> {
   }
 
   Future<void> _loadTickets() async {
+    setState(() {
+      _isLoading = true; // Mostrar indicador de carga
+    });
+
     try {
       tickets = await RestServiceTickets.getAllTickets('RECEIVED');
       _logger.i('Tickets cargados correctamente');
-      setState(() {});
     } catch (error) {
       _logger.e('Error al cargar los tickets: $error');
     }
+
+    setState(() {
+      _isLoading = false; // Ocultar indicador de carga
+    });
   }
 
   Color _getTicketColor(String type) {
@@ -48,13 +56,12 @@ class _TicketsScreenState extends State<TicketsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtrar los tickets solo por tipo, sin modificar el estado
     final filteredTickets = tickets?.where((ticket) {
       return selectedType == null || ticket.type.toLowerCase() == selectedType!.toLowerCase();
     }).toList();
 
     return CustomScaffold(
-      title: 'Tickets',
+      title: 'Tickets Recibidos',
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -85,9 +92,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: tickets == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : (filteredTickets?.isEmpty ?? true)
+                child: _isLoading
+                    ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+                    : tickets == null || filteredTickets?.isEmpty == true
                     ? const Center(
                   child: Text(
                     'No se encontraron tickets.',
@@ -100,13 +109,16 @@ class _TicketsScreenState extends State<TicketsScreen> {
                   itemBuilder: (context, index) {
                     final ticket = filteredTickets![index];
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => TicketDetailScreen(ticket: ticket),
                           ),
                         );
+                        if (result == true) {
+                          _loadTickets(); // Recarga los tickets si el detalle indica cambios
+                        }
                       },
                       child: Card(
                         color: Colors.white,

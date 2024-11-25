@@ -16,6 +16,7 @@ class _TicketsProgressScreenState extends State<TicketsProgressScreen> {
   static final Logger _logger = Logger();
   List<Ticket>? tickets;
   String? selectedType;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -24,12 +25,19 @@ class _TicketsProgressScreenState extends State<TicketsProgressScreen> {
   }
 
   Future<void> _loadTickets() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       tickets = await RestServiceTickets.getAllTickets('IN_PROGRESS');
       _logger.i('Tickets cargados correctamente');
-      setState(() {});
     } catch (error) {
       _logger.e('Error al cargar los tickets: $error');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -48,13 +56,13 @@ class _TicketsProgressScreenState extends State<TicketsProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtrar los tickets solo por tipo, sin modificar el estado
+    // Filtrar los tickets por tipo, sin modificar el estado original
     final filteredTickets = tickets?.where((ticket) {
       return selectedType == null || ticket.type.toLowerCase() == selectedType!.toLowerCase();
     }).toList();
 
     return CustomScaffold(
-      title: 'Tickets',
+      title: 'Tickets en Progreso',
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -85,9 +93,11 @@ class _TicketsProgressScreenState extends State<TicketsProgressScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: tickets == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : (filteredTickets?.isEmpty ?? true)
+                child: isLoading
+                    ? const Center(
+                  child: CircularProgressIndicator(), // Indicador de carga
+                )
+                    : tickets == null || tickets!.isEmpty
                     ? const Center(
                   child: Text(
                     'No se encontraron tickets en progreso.',
@@ -100,13 +110,15 @@ class _TicketsProgressScreenState extends State<TicketsProgressScreen> {
                   itemBuilder: (context, index) {
                     final ticket = filteredTickets![index];
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => TicketDetailScreen(ticket: ticket),
                           ),
-                        );
+                        ).then((_) {
+                          _loadTickets(); // Recargar tickets al volver
+                        });
                       },
                       child: Card(
                         color: Colors.white,

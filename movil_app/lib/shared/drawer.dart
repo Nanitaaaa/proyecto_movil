@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logger/logger.dart';
+import 'package:movil_app/screens/login_screen.dart';
+import 'package:movil_app/screens/tickets_cancelled_screen.dart';
 import 'package:movil_app/screens/tickets_pending_screen.dart';
 import 'package:movil_app/screens/tickets_progress_screen.dart';
+import 'package:movil_app/screens/tickets_rejected_screen.dart';
 import 'package:movil_app/screens/tickets_resolved_screen.dart';
 import 'package:movil_app/screens/tickets_review_screen.dart';
-import 'package:movil_app/screens/tickets_screen.dart'; // Asegúrate de que la importación sea correcta
+import 'package:movil_app/screens/tickets_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:movil_app/screens/home_screen.dart';
+import 'package:movil_app/screens/tickets_closed_screen.dart';
+
 
 class CustomScaffold extends StatefulWidget {
   final String title;
@@ -19,9 +26,12 @@ class CustomScaffold extends StatefulWidget {
 }
 
 class _CustomScaffoldState extends State<CustomScaffold> {
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  static final Logger _logger = Logger();
   String? userName;
   String? userEmail;
   String? userPhoto;
+
 
   @override
   void initState() {
@@ -128,7 +138,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.recommend),
+              leading: const Icon(Icons.thumb_up_alt),
               title: const Text('Tickets resueltos'),
               onTap: () {
                 Navigator.push(
@@ -140,11 +150,58 @@ class _CustomScaffoldState extends State<CustomScaffold> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.done_all),
+              title: const Text('Tickets cerrados'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => TicketClosedScreen()
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.thumb_down_alt),
+              title: const Text('Tickets rechazados'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => TicketRejectedScreen()
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.cancel_rounded),
+              title: const Text('Tickets cancelados'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => TicketCancelledScreen()
+                  ),
+                );
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Cerrar sesión'),
-              onTap: () {
-                Navigator.pop(context);
-                // Implementa el cierre de sesión
+              onTap: () async {
+                try {
+                  await _googleSignIn.signOut();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => LoginScreen()
+                    ),
+                  );
+                  _logger.i("Cierre de sesión exitoso");
+                } catch (error) {
+                  _logger.e("Error al cerrar sesión: $error");
+                  // Aquí puedes mostrar un mensaje de error en la UI si lo deseas
+                }
               },
             ),
           ],

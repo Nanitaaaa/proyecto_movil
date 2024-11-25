@@ -54,7 +54,7 @@ class _TicketsResolvedScreenState extends State<TicketsResolvedScreen> {
     }).toList();
 
     return CustomScaffold(
-      title: 'Tickets',
+      title: 'Tickets Resueltos',
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),

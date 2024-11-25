@@ -7,6 +7,7 @@ import 'package:movil_app/models/types.dart';
 import 'package:movil_app/models/categories.dart';
 import 'package:movil_app/models/status.dart';
 import 'package:movil_app/models/tickets.dart';
+import 'package:movil_app/models/attached.dart';
 
 
 class RestServiceAccess {
@@ -290,7 +291,48 @@ class TicketStateManager {
     } catch (e) {
       _logger.e("ERROR: $e");
     }
-
     return false;
+  }
+}
+
+
+class RestServiceAttached{
+  static final Dio _client = Dio();
+  static final Logger _logger = Logger();
+
+  static const String _mime = 'application/json';
+  static const String _baseUrl = 'https://api.sebastian.cl/oirs-utem';
+  static Future<Object?> getTicketAttached({
+    required String ticketToken,
+    required String attToken,
+  }) async {
+    SharedPreferences instance = await SharedPreferences.getInstance();
+    String idToken = instance.getString('idToken') ?? '';
+
+    if (idToken.isEmpty) {
+      _logger.e("No valid ID token found.");
+      return false;
+    }
+
+    final String url = '$_baseUrl/v1/attachments/$ticketToken/$attToken';
+    Map<String, String> headers = {'accept': _mime, 'Authorization': idToken};
+    try {
+      Response response = await _client.get(
+        url,
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200) {
+        _logger.i("Archivo adjunto obtenido correctamente.");
+        return Attached.fromJson(response.data);
+
+      }
+      else {
+        _logger.e("Error al obtener el archivo adjunto: ${response.statusCode}");
+      }
+    } catch (e) {
+      _logger.e("ERROR: $e");
+    }
+    return null;
   }
 }

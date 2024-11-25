@@ -5,18 +5,18 @@ import 'package:movil_app/screens/details_screen.dart';
 import 'package:movil_app/shared/drawer.dart';
 import 'package:logger/logger.dart';
 
-class TicketsPendingScreen extends StatefulWidget {
-  const TicketsPendingScreen({Key? key}) : super(key: key);
+class TicketClosedScreen extends StatefulWidget {
+  const TicketClosedScreen({Key? key}) : super(key: key);
 
   @override
-  _TicketsPendingScreenState createState() => _TicketsPendingScreenState();
+  _TicketClosedScreenState createState() => _TicketClosedScreenState();
 }
 
-class _TicketsPendingScreenState extends State<TicketsPendingScreen> {
+class _TicketClosedScreenState extends State<TicketClosedScreen> {
   static final Logger _logger = Logger();
   List<Ticket>? tickets;
   String? selectedType;
-  bool isLoading = false; // Indicador de carga
+  bool _isLoading = false; // Estado para controlar la carga
 
   @override
   void initState() {
@@ -26,19 +26,19 @@ class _TicketsPendingScreenState extends State<TicketsPendingScreen> {
 
   Future<void> _loadTickets() async {
     setState(() {
-      isLoading = true; // Activar indicador de carga
+      _isLoading = true; // Mostrar indicador de carga
     });
 
     try {
-      tickets = await RestServiceTickets.getAllTickets('PENDING_INFORMATION');
+      tickets = await RestServiceTickets.getAllTickets('CLOSED');
       _logger.i('Tickets cargados correctamente');
     } catch (error) {
       _logger.e('Error al cargar los tickets: $error');
-    } finally {
-      setState(() {
-        isLoading = false; // Finalizar indicador de carga
-      });
     }
+
+    setState(() {
+      _isLoading = false; // Ocultar indicador de carga
+    });
   }
 
   Color _getTicketColor(String type) {
@@ -56,13 +56,12 @@ class _TicketsPendingScreenState extends State<TicketsPendingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtrar los tickets por tipo, sin modificar el estado original
     final filteredTickets = tickets?.where((ticket) {
       return selectedType == null || ticket.type.toLowerCase() == selectedType!.toLowerCase();
     }).toList();
 
     return CustomScaffold(
-      title: 'Tickets Pendientes',
+      title: 'Tickets Cerrados',
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -93,14 +92,14 @@ class _TicketsPendingScreenState extends State<TicketsPendingScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: isLoading
+                child: _isLoading
                     ? const Center(
-                  child: CircularProgressIndicator(), // Indicador de carga
+                  child: CircularProgressIndicator(),
                 )
-                    : tickets == null || tickets!.isEmpty
+                    : tickets == null || filteredTickets?.isEmpty == true
                     ? const Center(
                   child: Text(
-                    'No se encontraron tickets pendientes.',
+                    'No se encontraron tickets.',
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 )
@@ -111,14 +110,15 @@ class _TicketsPendingScreenState extends State<TicketsPendingScreen> {
                     final ticket = filteredTickets![index];
                     return GestureDetector(
                       onTap: () async {
-                        await Navigator.push(
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => TicketDetailScreen(ticket: ticket),
                           ),
-                        ).then((_) {
-                          _loadTickets(); // Recargar tickets al volver
-                        });
+                        );
+                        if (result == true) {
+                          _loadTickets(); // Recarga los tickets si el detalle indica cambios
+                        }
                       },
                       child: Card(
                         color: Colors.white,
@@ -140,8 +140,7 @@ class _TicketsPendingScreenState extends State<TicketsPendingScreen> {
                                 ),
                               ),
                               const SizedBox(height: 8.0),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -160,7 +159,7 @@ class _TicketsPendingScreenState extends State<TicketsPendingScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 8.0),
+                                  const SizedBox(width: 10.0),
                                   Text(
                                     'Estado: ${ticket.status}',
                                     style: TextStyle(

@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '¡Bienvenido, $userName!', // Aquí se muestra el nconst ombre cargado
+                '¡Bienvenido Administrador, $userName!', // Aquí se muestra el nconst ombre cargado
                 style: const TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,

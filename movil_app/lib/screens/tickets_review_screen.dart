@@ -16,6 +16,7 @@ class _TicketsReviewScreenState extends State<TicketsReviewScreen> {
   static final Logger _logger = Logger();
   List<Ticket>? tickets;
   String? selectedType;
+  bool isLoading = false; // Estado de carga
 
   @override
   void initState() {
@@ -24,12 +25,19 @@ class _TicketsReviewScreenState extends State<TicketsReviewScreen> {
   }
 
   Future<void> _loadTickets() async {
+    setState(() {
+      isLoading = true; // Indicar que se están cargando los tickets
+    });
+
     try {
       tickets = await RestServiceTickets.getAllTickets('UNDER_REVIEW');
       _logger.i('Tickets cargados correctamente');
-      setState(() {});
     } catch (error) {
       _logger.e('Error al cargar los tickets: $error');
+    } finally {
+      setState(() {
+        isLoading = false; // Finalizar la carga
+      });
     }
   }
 
@@ -54,7 +62,7 @@ class _TicketsReviewScreenState extends State<TicketsReviewScreen> {
     }).toList();
 
     return CustomScaffold(
-      title: 'Tickets',
+      title: 'Tickets Bajo Revisión',
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -85,12 +93,14 @@ class _TicketsReviewScreenState extends State<TicketsReviewScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: tickets == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : (filteredTickets?.isEmpty ?? true)
+                child: isLoading
+                    ? const Center(
+                  child: CircularProgressIndicator(), // Indicador de carga
+                )
+                    : tickets == null || tickets!.isEmpty
                     ? const Center(
                   child: Text(
-                    'No se encontraron tickets bajo revisión .',
+                    'No se encontraron tickets bajo revisión.',
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 )
@@ -100,13 +110,15 @@ class _TicketsReviewScreenState extends State<TicketsReviewScreen> {
                   itemBuilder: (context, index) {
                     final ticket = filteredTickets![index];
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => TicketDetailScreen(ticket: ticket),
                           ),
-                        );
+                        ).then((_) {
+                          _loadTickets(); // Recargar al regresar
+                        });
                       },
                       child: Card(
                         color: Colors.white,
