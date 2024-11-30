@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:movil_app/models/tickets.dart';
 import 'package:movil_app/services/rest_service.dart';
 import 'package:dio/dio.dart';
@@ -20,6 +23,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   bool _isButtonDisabled = false;
   String? _selectedStatus;
   final TextEditingController _reasonController = TextEditingController();
+  static final Logger _logger = Logger();
 
   bool hasAttachments() {
     return widget.ticket.attachedTokens.isNotEmpty;
@@ -44,31 +48,43 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Future<void> _downloadFile(Attached attached) async {
     try {
-      // Directorio para guardar el archivo
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/${attached.name}';
 
-      // Descargar el archivo usando Dio
-      final dio = Dio();
-      final response = await dio.download(
-        attached.data, // URL del archivo adjunto
-        filePath,
-      );
+      final externalDir = await getExternalStorageDirectory();
+      if (externalDir == null) throw Exception('No se encontró el almacenamiento externo.');
 
-      if (response.statusCode == 200) {
+
+      final downloadDir = Directory('${externalDir.parent.parent.parent.parent.path}/Download');
+      final filePath = '${downloadDir.path}/${attached.name}';
+
+      if (attached.data.contains(RegExp(r'^[A-Za-z0-9+/=]+$'))) {
+
+        final decodedBytes = base64Decode(attached.data);
+        final file = File(filePath);
+        await file.writeAsBytes(decodedBytes);
+        _logger.i('Archivo guardado en: $filePath ');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Archivo descargado: ${attached.name}')),
+          SnackBar(content: Text('Archivo guardado en Descargas: $filePath')),
         );
       } else {
-        throw Exception('Error al descargar el archivo');
+        final dio = Dio();
+        final response = await dio.download(attached.data, filePath);
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Archivo descargado: ${attached.name}')),
+          );
+        } else {
+          throw Exception('Error al descargar el archivo desde la URL.');
+        }
       }
     } catch (e) {
       debugPrint('Error al descargar el archivo: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text('Error al descargar el archivo: ${e.toString()}')),
       );
     }
   }
+
   Future<void> _updateTicketStatus(
       BuildContext context, String newStatus, String successMessage) async {
     setState(() {
@@ -147,7 +163,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 10.0),
-
                     // Tipo
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -167,7 +182,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 10.0),
-
                     // Estado
                     Text(
                       'Estado: ${widget.ticket.status}',
@@ -177,7 +191,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 10.0),
-
                     // Categoría
                     const Text(
                       'Categoría:',
@@ -195,7 +208,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 10.0),
-
                     // Mensaje
                     const Text(
                       'Mensaje:',
@@ -213,7 +225,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 10.0),
-
                     // Respuesta
                     const Text(
                       'Respuesta:',
@@ -233,7 +244,6 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 10.0),
-
                     // Fechas
                     const Text(
                       'Fecha de creación:',
