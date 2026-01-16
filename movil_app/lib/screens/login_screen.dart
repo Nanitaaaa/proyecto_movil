@@ -18,7 +18,7 @@ class LoginScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start, // Cambiado a start
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Título estilizado
+
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -26,12 +26,12 @@ class LoginScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
-                  'Iniciar Sesión', // Título
+                  'Iniciar Sesión',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 36, // Tamaño de fuente mayor
-                    fontWeight: FontWeight.w700, // Negrita
-                    color: Colors.blueAccent, // Color atractivo
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.blueAccent,
                     shadows: [
                       Shadow(
                         blurRadius: 10.0,
@@ -42,7 +42,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 100), // Aumentar espacio entre el título y el siguiente texto
+              const SizedBox(height: 100),
               const Text(
                 'BIENVENIDO!',
                 textAlign: TextAlign.center,
@@ -52,17 +52,18 @@ class LoginScreen extends StatelessWidget {
                   color: Colors.blueAccent,
                 ),
               ),
-              const SizedBox(height: 100), // Espacio entre "Welcome Back!" y el botón
+              const SizedBox(height: 100),
               ElevatedButton.icon(
                 onPressed: () {
                   GoogleService.logIn().then((result) {
                     if (result) {
-                      _logger.i('Login success');
+                      _logger.i('Login exitoso');
                       Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const HomeScreen();
+                        return HomeScreen();
                       }));
                     } else {
                       _logger.e('Login failed');
+                      // ignore: use_build_context_synchronously
                       Navigator.push(context, MaterialPageRoute(builder: (context) {
                         return const ErrorScreen();
                       }));
@@ -84,15 +85,6 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  // Acción para olvidar la contraseña o crear una cuenta
-                },
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(color: Colors.blueAccent),
-                ),
-              ),
             ],
           ),
         ),
